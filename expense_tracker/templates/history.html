@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}История расходов{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">📜 История расходов</h5>
+
+        <div class="mb-3">
+            <label class="form-label">Фильтр по категории:</label>
+            <select class="form-control" id="categoryFilter" onchange="filterCategory()">
+                <option value="all">Все категории</option>
+                {% for key, cat in categories.items() %}
+                <option value="{{ key }}" {% if current_category == key %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% if expenses %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Название</th>
+                        <th>Категория</th>
+                        <th>Сумма</th>
+                        <th>Описание</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.date }}</td>
+                        <td>{{ expense.name }}</td>
+                        <td>{{ categories[expense.category].name if expense.category in categories else expense.category }}</td>
+                        <td class="text-danger fw-bold">{{ "%.2f"|format(expense.amount) }} ₽</td>
+                        <td>{{ expense.description or '-' }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_expense', expense_id=expense.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить расход?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-muted">Нет расходов</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function filterCategory() {
+        const category = document.getElementById('categoryFilter').value;
+        window.location.href = "{{ url_for('history') }}?category=" + category;
+    }
+</script>
+{% endblock %}

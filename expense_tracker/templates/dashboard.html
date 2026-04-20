@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h5 class="card-title">Всего потрачено</h5>
+                <h2>{{ "%.2f"|format(stats.total or 0) }} ₽</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h5 class="card-title">Количество трат</h5>
+                <h2>{{ stats.count or 0 }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h5 class="card-title">Средний чек</h5>
+                <h2>{{ "%.2f"|format(stats.average or 0) }} ₽</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">➕ Добавить расход</h5>
+                <form method="POST" action="{{ url_for('add_expense') }}">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" name="name" placeholder="Название" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="number" step="0.01" class="form-control" name="amount" placeholder="Сумма" required>
+                    </div>
+                    <div class="mb-3">
+                        <select class="form-control" name="category" required>
+                            <option value="">Выберите категорию</option>
+                            {% for key, cat in categories.items() %}
+                            <option value="{{ key }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <textarea class="form-control" name="description" placeholder="Описание (необязательно)"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <input type="date" class="form-control" name="date" value="{{ now().strftime('%Y-%m-%d') if now else '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📋 Последние расходы</h5>
+                {% if recent_expenses %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Название</th>
+                                <th>Категория</th>
+                                <th>Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in recent_expenses %}
+                            <tr>
+                                <td>{{ expense.date }}</td>
+                                <td>{{ expense.name }}</td>
+                                <td>{{ categories[expense.category].name if expense.category in categories else expense.category }}</td>
+                                <td class="text-danger fw-bold">{{ "%.2f"|format(expense.amount) }} ₽</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center text-muted">Нет добавленных расходов</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    // Установка сегодняшней даты по умолчанию
+    const dateInput = document.querySelector('input[type="date"]');
+    if (dateInput && !dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+</script>
+{% endblock %}
